@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Auto-Update Cache Busters (बिना APK बदले तुरंत अपडेट दिखाने के लिए) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title>Apex Play</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; user-select: none; }
+        
+        /* Disable Zoom and Pinching everywhere by default (Except Long Player) */
+        html, body { 
+            width: 100%; height: 100%; overflow-x: hidden; touch-action: pan-y; 
+            background: #000; color: #fff; font-family: 'Roboto', Arial, sans-serif; 
+            padding-bottom: 60px; -webkit-text-size-adjust: 100%;
+        }
+
+        /* Splash Screen */
+        #splashScreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
+        .apex-logo-svg { width: 100px; height: 100px; overflow: visible; filter: drop-shadow(0 0 25px rgba(255, 0, 0, 0.8)); animation: pulse 1.2s infinite alternate; }
+        .splash-title { font-size: 26px; font-weight: 800; margin-top: 15px; letter-spacing: 1px; color: #fff; }
+        .splash-title span { color: #ff0000; }
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+
+        /* Top Banner Ad Holder (Auto Margin Adjuster) */
+        .admob-top-banner { width: 100%; background: #111; text-align: center; min-height: 50px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 1001; }
+        .admob-top-banner:empty { display: none; }
+
+        /* Header Bar */
+        .header { background: #0f0f0f; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; transition: top 0.3s; }
+        body.has-top-banner .header { top: 50px; } /* Automatically pushes header down when top banner is active */
+
+        .app-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .header-logo-svg { width: 34px; height: 34px; overflow: visible; }
+        .app-title { font-size: 19px; font-weight: 800; color: #fff; }
+        .app-title span { color: #ff0000; }
+        
+        .search-container { display: flex; align-items: center; background: #121212; border: 1px solid #333; border-radius: 20px; padding: 4px 12px; max-width: 200px; width: 100%; }
+        .search-input { background: transparent; border: none; color: #fff; font-size: 13px; width: 100%; outline: none; }
+        .header-btn { background: #222; border: 1px solid #444; color: #fff; padding: 5px 10px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 6px; }
+        .header-btn svg { width: 14px; height: 14px; fill: #fff; }
+
+        /* Categories Bar */
+        .categories-bar { background: #000; display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid #111; position: sticky; top: 57px; z-index: 999; }
+        body.has-top-banner .categories-bar { top: 107px; }
+        .categories-bar::-webkit-scrollbar { display: none; }
+        .chip { background: #272727; color: #fff; padding: 6px 14px; border-radius: 8px; font-size: 13px; border: none; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+        .chip.active { background: #fff; color: #000; font-weight: bold; }
+
+        /* Home Feed */
+        .feed-container { padding: 10px; max-width: 650px; margin: 0 auto; background: #000; }
+        .video-card { background: #0f0f0f; margin-bottom: 16px; border-radius: 12px; overflow: hidden; border: 1px solid #222; }
+        .video-thumb { width: 100%; aspect-ratio: 16/9; background: #1a1a1a; position: relative; cursor: pointer; }
+        .video-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .video-info { padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .video-details { cursor: pointer; flex: 1; }
+        .video-title { font-size: 14px; font-weight: 600; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .video-meta { font-size: 12px; color: #aaa; }
+
+        /* Shorts Duo Grid Row */
+        .shorts-duo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .feed-short-card { background: #1a1a1a; aspect-ratio: 9/16; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid #222; }
+        .feed-short-card img { width: 100%; height: 100%; object-fit: cover; }
+        .feed-short-title { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); font-size: 12px; font-weight: bold; }
+
+        /* Construction Pages */
+        .construction-view { padding: 60px 20px; text-align: center; background: #000; height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .construction-box { background: #121212; border: 1px solid #222; padding: 30px 20px; border-radius: 16px; max-width: 400px; width: 100%; }
+        .construction-icon { font-size: 48px; margin-bottom: 15px; }
+        .construction-heading { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #fff; }
+        .construction-text { font-size: 13px; color: #aaa; line-height: 1.5; }
+
+        /* Bottom Navigation */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f0f0f; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 8px 0; z-index: 5000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #aaa; font-size: 10px; cursor: pointer; background: none; border: none; }
+        .nav-item.active { color: #fff; }
+        .nav-item svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; }
+
+        /* Vertical Scrolling Shorts Modal (Zoom disabled) */
+        #shortsModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 4000; flex-direction: column; touch-action: pan-y; }
+        .shorts-scroller { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .shorts-scroller::-webkit-scrollbar { display: none; }
+        .shorts-slide { width: 100%; height: 100vh; scroll-snap-align: start; scroll-snap-stop: always; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        .shorts-slide iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
+
+        /* Fullscreen Landscape Player Modal - ALLOWS ZOOM ONLY HERE */
+        #playerModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; touch-action: auto !important; }
+        .player-wrapper { width: 100%; height: 100%; background: #000; position: relative; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; touch-action: auto !important; }
+        
+        #playerIframe { width: 100%; height: 250px; border: none; transition: all 0.3s ease; touch-action: auto !important; }
+
+        /* Foolproof CSS Fullscreen Rotation */
+        #playerModal.force-fullscreen .player-wrapper {
+            width: 100vh;
+            height: 100vw;
+            position: absolute;
+            top: 0;
+            left: 100vw;
+            transform: rotate(90deg);
+            transform-origin: top left;
+        }
+        #playerModal.force-fullscreen #playerIframe {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* Custom Controls Overlay for Long Player */
+        .player-controls-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;
+            z-index: 100000;
+        }
+
+        .top-controls, .bottom-controls { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+
+        .control-btn { 
+            background: rgba(0, 0, 0, 0.8); border: 1px solid rgba(255,255,255,0.4); 
+            color: #fff; width: 44px; height: 44px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; pointer-events: auto; backdrop-filter: blur(5px);
+            transition: transform 0.2s;
+        }
+        .control-btn:active { transform: scale(0.9); }
+        .control-btn svg { width: 24px; height: 24px; fill: #fff; }
+
+        .page-view { display: none; }
+        .page-view.active { display: block; }
+        .feed-loader { text-align: center; padding: 20px; color: #aaa; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splashScreen">
+        <svg class="apex-logo-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <linearGradient id="apexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ff2a2a"/>
+                    <stop offset="100%" stop-color="#b30000"/>
+                </linearGradient>
+            </defs>
+            <path d="M 20 12 C 10 6, 2 12, 2 24 L 2 76 C 2 88, 10 94, 20 88 L 88 54 C 98 48, 98 40, 88 34 Z" fill="url(#apexGrad)"/>
+            <path d="M 28 66 L 43 32 L 53 32 L 68 66 L 58 66 L 54 56 L 42 56 L 38 66 Z M 44 48 L 52 48 L 48 38 Z" fill="#ffffff"/>
+        </svg>
+        <div class="splash-title">APEX <span>Play</span></div>
+    </div>
+
+    <!-- Top Banner Ad Container (Auto-adjusts header when active) -->
+    <div class="admob-top-banner" id="topBannerContainer"></div>
+
+    <!-- Header Bar -->
+    <div class="header">
+        <div class="app-brand" onclick="switchTab('home', document.querySelectorAll('.nav-item')[0])">
+            <svg class="header-logo-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <path d="M 20 12 C 10 6, 2 12, 2 24 L 2 76 C 2 88, 10 94, 20 88 L 88 54 C 98 48, 98 40, 88 34 Z" fill="#ff0000"/>
+                <path d="M 28 66 L 43 32 L 53 32 L 68 66 L 58 66 L 54 56 L 42 56 L 38 66 Z M 44 48 L 52 48 L 48 38 Z" fill="#ffffff"/>
+            </svg>
+            <div class="app-title">APEX <span>Play</span></div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search..." onkeypress="handleSearchKey(event)">
+            <button class="header-btn" onclick="triggerSearch()">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Home Page -->
+    <div id="homePage" class="page-view active">
+        <div class="categories-bar">
+            <button class="chip active" onclick="filterCategory('', this)">All</button>
+            <button class="chip" onclick="filterCategory('Gaming', this)">Gaming</button>
+            <button class="chip" onclick="filterCategory('Music', this)">Music</button>
+            <button class="chip" onclick="filterCategory('Tech', this)">Tech</button>
+            <button class="chip" onclick="filterCategory('Cooking', this)">Cooking</button>
+            <button class="chip" onclick="filterCategory('Comedy', this)">Comedy</button>
+            <button class="chip" onclick="filterCategory('Entertainment', this)">Entertainment</button>
+            <button class="chip" onclick="filterCategory('Sports', this)">Sports</button>
+            <button class="chip" onclick="filterCategory('Vlogs', this)">Vlogs</button>
+            <button class="chip" onclick="filterCategory('News', this)">News</button>
+            <button class="chip" onclick="filterCategory('Fashion', this)">Fashion</button>
+        </div>
+        <div class="feed-container" id="mixedFeedContainer"></div>
+        <div class="feed-loader" id="feedLoader" style="display:none;">Loading fresh Apex videos...</div>
+    </div>
+
+    <!-- Upload Page -->
+    <div id="uploadPage" class="page-view">
+        <div class="construction-view">
+            <div class="construction-box">
+                <div class="construction-icon">🚀</div>
+                <div class="construction-heading">Apex Creator Studio</div>
+                <div class="construction-text">Uploads and offline editor coming soon.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscriptions Page -->
+    <div id="subsPage" class="page-view">
+        <div class="construction-view">
+            <div class="construction-box">
+                <div class="construction-icon">📺</div>
+                <div class="construction-heading">Subscriptions Feed</div>
+                <div class="construction-text">Subscribed channels feed.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profilePage" class="page-view">
+        <div class="construction-view">
+            <div class="construction-box">
+                <div class="construction-icon">👤</div>
+                <div class="construction-heading">User Profile</div>
+                <div class="construction-text">Account details and settings.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vertical Scrolling Shorts Modal -->
+    <div id="shortsModal">
+        <div class="shorts-scroller" id="shortsScroller"></div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('home', this)">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home
+        </button>
+        <button class="nav-item" onclick="openShortsFeed('')">
+            <svg viewBox="0 0 24 24"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07 1 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zM10 14.5v-5l4.5 2.5-4.5 2.5z"/></svg>Shorts
+        </button>
+        <button class="nav-item" onclick="switchTab('upload', this)">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Upload
+        </button>
+        <button class="nav-item" onclick="switchTab('subs', this)">
+            <svg viewBox="0 0 24 24"><path d="M20 7H4v2h16V7zm2-4H2v2h20V3zm-4 10H6v2h12v-2zm4 4H2v2h20v-2z"/></svg>Subs
+        </button>
+        <button class="nav-item" onclick="switchTab('profile', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>Profile
+        </button>
+    </div>
+
+    <!-- Foolproof Fullscreen Landscape Player Modal (Zoom Allowed Here) -->
+    <div id="playerModal">
+        <div class="player-controls-overlay">
+            <div class="top-controls">
+                <button class="control-btn" onclick="closePlayer()" title="Back">
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                </button>
+            </div>
+            <div class="bottom-controls">
+                <div></div>
+                <!-- Foolproof Fullscreen / Halfscreen Toggle Button -->
+                <button class="control-btn" id="toggleScreenBtn" onclick="toggleFoolproofFullscreen()" title="Toggle Fullscreen">
+                    <svg id="fullscreenIcon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="player-wrapper">
+            <iframe id="playerIframe" src="" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        // APP LIVE LINK REGISTERED & CONFIGURED
+        const APP_LIVE_URL = "https://g-1-six.vercel.app/";
+        const API_KEY = 'AIzaSyB2QkQtCsg1WvLeMqnS1kU4FDbiHNAp1Pg';
+        const PANEL_API_URL = "https://your-backend-panel.com/api/collect.php";
+
+        // ==========================================
+        // OFFICIAL ADMOB CONFIGURATION
+        // ==========================================
+        const ADMOB_CONFIG = {
+            appId: "ca-app-pub-7162948529000682~7627491827",
+            bannerUnitId: "ca-app-pub-7162948529000682/6992358644",
+            interstitialUnitId1: "ca-app-pub-7162948529000682/8580772484",
+            interstitialUnitId2: "ca-app-pub-7162948529000682/6202728994"
+        };
+
+        // Prevent Double-Tap Zooming strictly everywhere EXCEPT inside playerModal
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            let now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                if (!event.target.closest('#playerModal')) {
+                    event.preventDefault();
+                }
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Track Device & Downloads
+        function getDeviceTracker() {
+            let deviceId = localStorage.getItem('apex_device_id');
+            let isNewDownload = false;
+
+            if (!deviceId) {
+                deviceId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                localStorage.setItem('apex_device_id', deviceId);
+                isNewDownload = true;
+            }
+            return { deviceId, isNewDownload };
+        }
+
+        const { deviceId, isNewDownload } = getDeviceTracker();
+        let sessionStartTime = Date.now();
+
+        function sendAnalyticsData(type, payload = {}) {
+            const dataPacket = {
+                type: type,
+                deviceId: deviceId,
+                isNewDownload: isNewDownload,
+                timestamp: new Date().toISOString(),
+                ...payload
+            };
+
+            if (navigator.onLine) {
+                fetch(PANEL_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataPacket)
+                }).catch(err => saveToOfflineStorage(dataPacket));
+            } else {
+                saveToOfflineStorage(dataPacket);
+            }
+        }
+
+        function saveToOfflineStorage(packet) {
+            let queue = JSON.parse(localStorage.getItem('apex_offline_queue')) || [];
+            queue.push(packet);
+            localStorage.setItem('apex_offline_queue', JSON.stringify(queue));
+        }
+
+        window.addEventListener('online', () => {
+            let queue = JSON.parse(localStorage.getItem('apex_offline_queue')) || [];
+            if (queue.length > 0) {
+                queue.forEach(packet => {
+                    fetch(PANEL_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(packet)
+                    }).catch(e => {});
+                });
+                localStorage.removeItem('apex_offline_queue');
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            let durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+            sendAnalyticsData('session_summary', { activeSeconds: durationSeconds });
+        });
+
+        let dynamicShortsPool = [];
+        let currentQuery = '';
+        let nextPageToken = '';
+        let isLoadingFeed = false;
+        let isForceFullscreen = false;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                let splash = document.getElementById('splashScreen');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.display = 'none', 400);
+            }, 600);
+
+            loadFreshFeed('');
+
+            window.addEventListener('scroll', () => {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
+                    if (!isLoadingFeed) {
+                        loadMoreFeed();
+                    }
+                }
+            });
+
+            initAdMobAds();
+        });
+
+        // AdMob Bridge Handler with Dynamic Top Banner Spacing
+        function initAdMobAds() {
+            if (window.AndroidAdMob && window.AndroidAdMob.showBanner) {
+                window.AndroidAdMob.showBanner(ADMOB_CONFIG.bannerUnitId);
+            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.showBanner) {
+                window.webkit.messageHandlers.showBanner.postMessage(ADMOB_CONFIG.bannerUnitId);
+            } else {
+                let bannerContainer = document.getElementById('topBannerContainer');
+                if (bannerContainer && bannerContainer.innerHTML.trim() !== '') {
+                    document.body.classList.add('has-top-banner');
+                } else {
+                    document.body.classList.remove('has-top-banner');
+                }
+            }
+        }
+
+        function triggerAdMobInterstitial() {
+            let intId = Math.random() > 0.5 ? ADMOB_CONFIG.interstitialUnitId1 : ADMOB_CONFIG.interstitialUnitId2;
+            if (window.AndroidAdMob && window.AndroidAdMob.showInterstitial) {
+                window.AndroidAdMob.showInterstitial(intId);
+            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.showInterstitial) {
+                window.webkit.messageHandlers.showInterstitial.postMessage(intId);
+            }
+        }
+
+        function triggerSearch() {
+            let val = document.getElementById('searchInput').value;
+            currentQuery = val;
+            nextPageToken = '';
+            document.getElementById('mixedFeedContainer').innerHTML = '';
+            loadFreshFeed(currentQuery);
+        }
+
+        function handleSearchKey(e) { 
+            if (e.key === 'Enter') triggerSearch();
+        }
+
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            currentQuery = cat;
+            nextPageToken = '';
+            document.getElementById('mixedFeedContainer').innerHTML = '';
+            loadFreshFeed(currentQuery);
+        }
+
+        function getRandomToken() {
+            const tokens = ['', 'CAQQAQ', 'CAUQAQ', 'CAYQAQ', 'CCoAEA', 'CGQQAA', 'CIgBEAA', 'CJgBEAA'];
+            return tokens[Math.floor(Math.random() * tokens.length)];
+        }
+
+        async function loadFreshFeed(q) {
+            isLoadingFeed = true;
+            document.getElementById('feedLoader').style.display = 'block';
+
+            let randToken = getRandomToken();
+            let longUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=50&pageToken=${randToken}&key=${API_KEY}`;
+            if(q) longUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50&q=${encodeURIComponent(q)}&key=${API_KEY}`;
+
+            try {
+                let longRes = await fetch(longUrl);
+                let longData = await longRes.json();
+                let longVideos = longData.items || [];
+                longVideos.sort(() => Math.random() - 0.5);
+                nextPageToken = longData.nextPageToken || '';
+
+                let randomShortQueries = ['viral shorts india', 'trending reels 2026', 'gaming shorts', 'funny shorts', 'tech shorts'];
+                let chosenQuery = q ? q + ' shorts' : randomShortQueries[Math.floor(Math.random() * randomShortQueries.length)];
+
+                let shortSearchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=40&q=${encodeURIComponent(chosenQuery)}&key=${API_KEY}`;
+                let shortRes = await fetch(shortSearchUrl);
+                let shortData = await shortRes.json();
+                if(shortData.items && shortData.items.length > 0) {
+                    dynamicShortsPool = shortData.items;
+                    dynamicShortsPool.sort(() => Math.random() - 0.5);
+                }
+
+                renderFeedItems(longVideos);
+            } catch(e) {}
+            isLoadingFeed = false;
+            document.getElementById('feedLoader').style.display = 'none';
+        }
+
+        async function loadMoreFeed() {
+            if (!nextPageToken) return;
+            isLoadingFeed = true;
+            document.getElementById('feedLoader').style.display = 'block';
+
+            let longUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=IN&maxResults=50&pageToken=${nextPageToken}&key=${API_KEY}`;
+            if(currentQuery) longUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50&q=${encodeURIComponent(currentQuery)}&pageToken=${nextPageToken}&key=${API_KEY}`;
+
+            try {
+                let longRes = await fetch(longUrl);
+                let longData = await longRes.json();
+                let longVideos = longData.items || [];
+                longVideos.sort(() => Math.random() - 0.5);
+                nextPageToken = longData.nextPageToken || '';
+
+                renderFeedItems(longVideos);
+            } catch(e) {}
+            isLoadingFeed = false;
+            document.getElementById('feedLoader').style.display = 'none';
+        }
+
+        function renderFeedItems(longVideos) {
+            let container = document.getElementById('mixedFeedContainer');
+            let lIdx = 0;
+            let sIdx = Math.floor(Math.random() * (dynamicShortsPool.length || 1));
+
+            while (lIdx < longVideos.length) {
+                let v = longVideos[lIdx++];
+                let id = typeof v.id === 'string' ? v.id : (v.id ? v.id.videoId : '');
+                if(!id) continue;
+                let title = v.snippet.title;
+                let channel = v.snippet.channelTitle;
+                let thumb = v.snippet.thumbnails.high ? v.snippet.thumbnails.high.url : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+                let views = v.statistics && v.statistics.viewCount ? formatNumber(v.statistics.viewCount) : 'Trending';
+
+                let longCard = document.createElement('div');
+                longCard.className = 'video-card';
+                longCard.innerHTML = `
+                    <div class="video-thumb" onclick="openLongPlayer('${id}')"><img src="${thumb}"></div>
+                    <div class="video-info">
+                        <div class="video-details" onclick="openLongPlayer('${id}')">
+                            <div class="video-title">${title}</div>
+                            <div class="video-meta">${channel} • ${views} views</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(longCard);
+
+                if (dynamicShortsPool.length > 0) {
+                    let s1 = dynamicShortsPool[sIdx % dynamicShortsPool.length];
+                    sIdx++;
+                    let s2 = dynamicShortsPool[sIdx % dynamicShortsPool.length];
+                    sIdx++;
+
+                    let s1Id = typeof s1.id === 'string' ? s1.id : (s1.id.videoId || s1.id);
+                    let s2Id = typeof s2.id === 'string' ? s2.id : (s2.id.videoId || s2.id);
+                    let s1Thumb = s1.snippet.thumbnails.high ? s1.snippet.thumbnails.high.url : `https://i.ytimg.com/vi/${s1Id}/hqdefault.jpg`;
+                    let s2Thumb = s2.snippet.thumbnails.high ? s2.snippet.thumbnails.high.url : `https://i.ytimg.com/vi/${s2Id}/hqdefault.jpg`;
+
+                    let duoRow = document.createElement('div');
+                    duoRow.className = 'shorts-duo-row';
+                    duoRow.innerHTML = `
+                        <div class="feed-short-card" onclick="openShortsFeed('${s1Id}')">
+                            <img src="${s1Thumb}">
+                            <div class="feed-short-title">${s1.snippet.title}</div>
+                        </div>
+                        <div class="feed-short-card" onclick="openShortsFeed('${s2Id}')">
+                            <img src="${s2Thumb}">
+                            <div class="feed-short-title">${s2.snippet.title}</div>
+                        </div>
+                    `;
+                    container.appendChild(duoRow);
+                }
+            }
+        }
+
+        function formatNumber(num) {
+            num = parseInt(num);
+            if(num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if(num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num;
+        }
+
+        async function openShortsFeed(startId) {
+            triggerAdMobInterstitial();
+            let scroller = document.getElementById('shortsScroller');
+            scroller.innerHTML = '';
+            document.getElementById('shortsModal').style.display = 'flex';
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+
+            let list = [...dynamicShortsPool];
+            list.sort(() => Math.random() - 0.5);
+            if(startId) {
+                list.sort((a, b) => {
+                    let aId = typeof a.id === 'string' ? a.id : (a.id.videoId || a.id);
+                    return aId === startId ? -1 : 1;
+                });
+            }
+
+            list.forEach((item, index) => {
+                let id = typeof item.id === 'string' ? item.id : (item.id.videoId || item.id);
+                if(!id) return;
+                
+                let slide = document.createElement('div');
+                slide.className = 'shorts-slide';
+                slide.setAttribute('data-videoid', id);
+                let thumbUrl = item.snippet.thumbnails.high ? item.snippet.thumbnails.high.url : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+                slide.innerHTML = `<img src="${thumbUrl}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;" />`;
+                scroller.appendChild(slide);
+            });
+
+            setupShortsObserver();
+        }
+
+        function setupShortsObserver() {
+            let scroller = document.getElementById('shortsScroller');
+            let slides = scroller.querySelectorAll('.shorts-slide');
+
+            let observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    let slide = entry.target;
+                    let videoId = slide.getAttribute('data-videoid');
+
+                    if (entry.isIntersecting) {
+                        if (!slide.querySelector('iframe')) {
+                            slide.innerHTML = `
+                                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&playsinline=1" 
+                                        allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+                            `;
+                        }
+                    } else {
+                        let iframe = slide.querySelector('iframe');
+                        if (iframe) {
+                            let thumbUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                            slide.innerHTML = `<img src="${thumbUrl}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0;" />`;
+                        }
+                    }
+                });
+            }, { root: scroller, threshold: 0.6 });
+
+            slides.forEach(slide => observer.observe(slide));
+        }
+
+        function closeShortsModal() {
+            document.getElementById('shortsModal').style.display = 'none';
+            document.getElementById('shortsScroller').innerHTML = '';
+        }
+
+        function openLongPlayer(id) {
+            triggerAdMobInterstitial();
+            closeShortsModal();
+            let modal = document.getElementById('playerModal');
+            let iframe = document.getElementById('playerIframe');
+            iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1`;
+            modal.style.display = 'block';
+
+            exitFoolproofFullscreen();
+        }
+
+        // Foolproof CSS Fullscreen Rotation Toggle
+        function toggleFoolproofFullscreen() {
+            if (isForceFullscreen) {
+                exitFoolproofFullscreen();
+            } else {
+                enterFoolproofFullscreen();
+            }
+        }
+
+        function enterFoolproofFullscreen() {
+            let modal = document.getElementById('playerModal');
+            isForceFullscreen = true;
+            modal.classList.add('force-fullscreen');
+
+            let iconSvg = document.getElementById('fullscreenIcon');
+            if(iconSvg) iconSvg.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+        }
+
+        function exitFoolproofFullscreen() {
+            let modal = document.getElementById('playerModal');
+            isForceFullscreen = false;
+            modal.classList.remove('force-fullscreen');
+
+            let iconSvg = document.getElementById('fullscreenIcon');
+            if(iconSvg) iconSvg.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+        }
+
+        function closePlayer() {
+            exitFoolproofFullscreen();
+            document.getElementById('playerIframe').src = '';
+            document.getElementById('playerModal').style.display = 'none';
+        }
+
+        function switchTab(tab, btn) {
+            closePlayer();
+            closeShortsModal();
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tab + 'Page').classList.add('active');
+            if(btn) btn.classList.add('active');
+
+            if(tab === 'home') {
+                loadFreshFeed(currentQuery);
+            }
+        }
+    </script>
+</body>
+</html>
