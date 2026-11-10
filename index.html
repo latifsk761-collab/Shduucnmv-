@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- Auto-Update Cache Busters (बिना APK बदले तुरंत अपडेट दिखाने के लिए) -->
+    <!-- Auto-Update Cache Busters -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -13,7 +13,6 @@
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; user-select: none; }
         
-        /* Disable Zoom and Pinching everywhere by default (Except Long Player) */
         html, body { 
             width: 100%; height: 100%; overflow-x: hidden; touch-action: pan-y; 
             background: #000; color: #fff; font-family: 'Roboto', Arial, sans-serif; 
@@ -27,13 +26,13 @@
         .splash-title span { color: #ff0000; }
         @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
 
-        /* Top Banner Ad Holder (Auto Margin Adjuster) */
+        /* Top Banner Ad Holder */
         .admob-top-banner { width: 100%; background: #111; text-align: center; min-height: 50px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 1001; }
         .admob-top-banner:empty { display: none; }
 
         /* Header Bar */
         .header { background: #0f0f0f; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; transition: top 0.3s; }
-        body.has-top-banner .header { top: 50px; } /* Automatically pushes header down when top banner is active */
+        body.has-top-banner .header { top: 50px; }
 
         .app-brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .header-logo-svg { width: 34px; height: 34px; overflow: visible; }
@@ -45,7 +44,6 @@
         .header-btn { background: #222; border: 1px solid #444; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .header-btn svg { width: 14px; height: 14px; fill: #fff; }
         
-        /* Mic Listening State Animation */
         .header-btn.listening { background: #ff0000 !important; border-color: #ff4444; animation: micPulse 1s infinite; }
         @keyframes micPulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
 
@@ -66,11 +64,48 @@
         .video-title { font-size: 14px; font-weight: 600; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .video-meta { font-size: 12px; color: #aaa; }
 
-        /* Shorts Duo Grid Row */
         .shorts-duo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         .feed-short-card { background: #1a1a1a; aspect-ratio: 9/16; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid #222; }
         .feed-short-card img { width: 100%; height: 100%; object-fit: cover; }
         .feed-short-title { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px; background: linear-gradient(transparent, rgba(0,0,0,0.85)); font-size: 12px; font-weight: bold; }
+
+        /* APEX AI UI STYLES (Gemini Style Unique Welcome Screen) */
+        .ai-chat-container { display: flex; flex-direction: column; height: calc(100vh - 110px); max-width: 650px; margin: 0 auto; background: #131314; position: relative; }
+        .ai-header { padding: 12px 16px; background: #1e1f20; border-bottom: 1px solid #333; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .ai-header-left { display: flex; align-items: center; gap: 12px; }
+        .ai-icon-btn { background: none; border: none; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; }
+        .ai-icon-btn:active { background: #333; }
+        .ai-icon-btn svg { width: 20px; height: 20px; fill: #fff; }
+        .ai-header-title { font-size: 16px; font-weight: bold; color: #fff; }
+        .ai-header-title span { color: #ff0000; }
+        
+        .ai-messages { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; display: flex; flex-direction: column; gap: 12px; position: relative; }
+        
+        /* Unique Gemini Style Welcome Screen */
+        .ai-welcome-screen { position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 88%; max-width: 420px; }
+        .ai-welcome-badge { display: inline-block; background: rgba(255, 0, 0, 0.15); color: #ff4444; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 10px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,0,0,0.3); }
+        .ai-welcome-title { font-size: 26px; font-weight: 800; color: #f1f1f1; margin-bottom: 10px; background: linear-gradient(90deg, #ffffff, #888888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .ai-welcome-subtitle { font-size: 13px; color: #999; line-height: 1.5; }
+
+        .ai-msg { max-width: 90%; padding: 12px 16px; border-radius: 14px; font-size: 13px; line-height: 1.5; word-wrap: break-word; }
+        .ai-msg.user { background: #2b2c2f; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai-msg.bot { background: #1e1f20; color: #e3e3e3; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #333; }
+        
+        /* YouTube Channel Card inside AI */
+        .ai-channel-card { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 14px; margin-top: 8px; }
+        .ai-channel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .ai-channel-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
+        .ai-channel-name { font-size: 15px; font-weight: bold; color: #fff; }
+        .ai-channel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: #111; padding: 8px; border-radius: 8px; text-align: center; margin-bottom: 10px; }
+        .stat-box { font-size: 11px; color: #aaa; }
+        .stat-box span { display: block; font-size: 13px; font-weight: bold; color: #fff; margin-top: 2px; }
+        .ai-channel-desc { font-size: 11px; color: #ccc; max-height: 60px; overflow-y: auto; line-height: 1.4; border-top: 1px solid #222; padding-top: 6px; }
+
+        .ai-input-dock { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: #131314; border-top: 1px solid #222; z-index: 100; }
+        .ai-input-box { background: #1e1f20; border: 1px solid #333; border-radius: 24px; padding: 4px 12px; display: flex; align-items: center; gap: 8px; }
+        .ai-text-input { flex: 1; background: transparent; border: none; padding: 6px 8px; color: #fff; font-size: 13px; outline: none; }
+        .ai-send-btn { background: #ff0000; color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ai-send-btn svg { width: 16px; height: 16px; fill: #fff; }
 
         /* Construction Pages */
         .construction-view { padding: 60px 20px; text-align: center; background: #000; height: calc(100vh - 120px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -85,20 +120,19 @@
         .nav-item.active { color: #fff; }
         .nav-item svg { width: 22px; height: 22px; fill: currentColor; margin-bottom: 2px; }
 
-        /* Vertical Scrolling Shorts Modal (Zoom disabled) */
+        /* Vertical Scrolling Shorts Modal */
         #shortsModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 4000; flex-direction: column; touch-action: pan-y; }
         .shorts-scroller { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .shorts-scroller::-webkit-scrollbar { display: none; }
         .shorts-slide { width: 100%; height: 100vh; scroll-snap-align: start; scroll-snap-stop: always; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
         .shorts-slide iframe { width: 100%; height: 100%; border: none; pointer-events: auto; }
 
-        /* Fullscreen Landscape Player Modal - ALLOWS ZOOM ONLY HERE */
+        /* Fullscreen Landscape Player Modal */
         #playerModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; touch-action: auto !important; }
         .player-wrapper { width: 100%; height: 100%; background: #000; position: relative; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; touch-action: auto !important; }
         
         #playerIframe { width: 100%; height: 250px; border: none; transition: all 0.3s ease; touch-action: auto !important; }
 
-        /* Foolproof CSS Fullscreen Rotation */
         #playerModal.force-fullscreen .player-wrapper {
             width: 100vh;
             height: 100vw;
@@ -113,7 +147,6 @@
             height: 100% !important;
         }
 
-        /* Custom Controls Overlay for Long Player */
         .player-controls-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 16px;
@@ -154,7 +187,7 @@
         <div class="splash-title">APEX <span>Play</span></div>
     </div>
 
-    <!-- Top Banner Ad Container (Auto-adjusts header when active) -->
+    <!-- Top Banner Ad Container -->
     <div class="admob-top-banner" id="topBannerContainer"></div>
 
     <!-- Header Bar -->
@@ -166,9 +199,9 @@
             </svg>
             <div class="app-title">APEX <span>Play</span></div>
         </div>
-        <div class="search-container">
+        <!-- Search Bar: Only visible on Home Screen -->
+        <div class="search-container" id="homeSearchContainer">
             <input type="text" id="searchInput" class="search-input" placeholder="Search..." onkeypress="handleSearchKey(event)">
-            <!-- Voice Speech Mic Button Added Here -->
             <button class="header-btn" id="micBtn" onclick="toggleSpeechRecognition()" title="Voice Search">
                 <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.39-.9.89 0 2.12-1.66 3.84-3.75 3.84s-3.75-1.72-3.75-3.84c0-.5-.41-.89-.9-.89s-.9.39-.9.89c0 2.43 1.74 4.44 4 4.83V19h-2.5c-.55 0-1 .45-1 1s.45 1 1 1h7c.55 0 1-.45 1-1s-.45-1-1-1H13v-1.28c2.26-.39 4-2.4 4-4.83 0-.5-.41-.89-.9-.89z"/></svg>
             </button>
@@ -197,13 +230,38 @@
         <div class="feed-loader" id="feedLoader" style="display:none;">Loading fresh Apex videos...</div>
     </div>
 
-    <!-- Upload Page -->
+    <!-- Apex AI Page (Gemini Style Unique Welcome Screen, 3-lines menu & New Chat Pencil Icon) -->
     <div id="uploadPage" class="page-view">
-        <div class="construction-view">
-            <div class="construction-box">
-                <div class="construction-icon">🚀</div>
-                <div class="construction-heading">Apex Creator Studio</div>
-                <div class="construction-text">Uploads and offline editor coming soon.</div>
+        <div class="ai-chat-container">
+            <div class="ai-header">
+                <div class="ai-header-left">
+                    <button class="ai-icon-btn" title="Menu">
+                        <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                    </button>
+                    <div class="ai-header-title">Apex <span>AI</span></div>
+                </div>
+                <!-- New Chat Pencil Icon -->
+                <button class="ai-icon-btn" onclick="startNewChat()" title="New Chat">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </button>
+            </div>
+            
+            <div class="ai-messages" id="aiMessagesBox">
+                <!-- Unique Gemini Style Welcome Screen -->
+                <div class="ai-welcome-screen" id="aiWelcomeScreen">
+                    <div class="ai-welcome-badge">Apex Intelligence</div>
+                    <div class="ai-welcome-title">How can I help you today?</div>
+                    <div class="ai-welcome-subtitle">Search any YouTube channel name below to explore live analytics, subscriber count, total views, and video insights.</div>
+                </div>
+            </div>
+
+            <div class="ai-input-dock">
+                <div class="ai-input-box">
+                    <input type="text" id="aiUserInput" class="ai-text-input" placeholder="Type YouTube channel name..." onkeypress="handleAiKey(event)">
+                    <button class="ai-send-btn" onclick="sendAiMessage()">
+                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -244,7 +302,7 @@
             <svg viewBox="0 0 24 24"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07 1 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zM10 14.5v-5l4.5 2.5-4.5 2.5z"/></svg>Shorts
         </button>
         <button class="nav-item" onclick="switchTab('upload', this)">
-            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Upload
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v-4h-2v4zm0-6h2V8h-2v2z"/></svg>Apex AI
         </button>
         <button class="nav-item" onclick="switchTab('subs', this)">
             <svg viewBox="0 0 24 24"><path d="M20 7H4v2h16V7zm2-4H2v2h20V3zm-4 10H6v2h12v-2zm4 4H2v2h20v-2z"/></svg>Subs
@@ -254,7 +312,7 @@
         </button>
     </div>
 
-    <!-- Foolproof Fullscreen Landscape Player Modal (Zoom Allowed Here) -->
+    <!-- Foolproof Fullscreen Landscape Player Modal -->
     <div id="playerModal">
         <div class="player-controls-overlay">
             <div class="top-controls">
@@ -264,7 +322,6 @@
             </div>
             <div class="bottom-controls">
                 <div></div>
-                <!-- Foolproof Fullscreen / Halfscreen Toggle Button -->
                 <button class="control-btn" id="toggleScreenBtn" onclick="toggleFoolproofFullscreen()" title="Toggle Fullscreen">
                     <svg id="fullscreenIcon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
                 </button>
@@ -276,14 +333,10 @@
     </div>
 
     <script>
-        // APP LIVE LINK REGISTERED & CONFIGURED
         const APP_LIVE_URL = "https://g-1-six.vercel.app/";
         const API_KEY = 'AIzaSyB2QkQtCsg1WvLeMqnS1kU4FDbiHNAp1Pg';
         const PANEL_API_URL = "https://your-backend-panel.com/api/collect.php";
 
-        // ==========================================
-        // OFFICIAL ADMOB CONFIGURATION
-        // ==========================================
         const ADMOB_CONFIG = {
             appId: "ca-app-pub-7162948529000682~7627491827",
             bannerUnitId: "ca-app-pub-7162948529000682/6992358644",
@@ -291,14 +344,13 @@
             interstitialUnitId2: "ca-app-pub-7162948529000682/6202728994"
         };
 
-        // Speech Recognition Integration for Voice Search
         let recognition = null;
         let isListening = false;
 
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN'; // हिंदी भाषा सपोर्ट (Voice Search)
+            recognition.lang = 'hi-IN';
             recognition.continuous = false;
             recognition.interimResults = false;
 
@@ -313,29 +365,17 @@
                 let searchInput = document.getElementById('searchInput');
                 if(searchInput) {
                     searchInput.value = speechToText;
-                    triggerSearch(); // बोलकर टाइप होते ही ऑटो-सर्च शुरू हो जाएगा
+                    triggerSearch();
                 }
             };
 
-            recognition.onerror = function(event) {
-                stopMic();
-            };
-
-            recognition.onend = function() {
-                stopMic();
-            };
+            recognition.onerror = function(event) { stopMic(); };
+            recognition.onend = function() { stopMic(); };
         }
 
         function toggleSpeechRecognition() {
-            if (!recognition) {
-                alert("Speech recognition is not supported on this browser.");
-                return;
-            }
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.start();
-            }
+            if (!recognition) { alert("Speech recognition not supported."); return; }
+            if (isListening) { recognition.stop(); } else { recognition.start(); }
         }
 
         function stopMic() {
@@ -344,78 +384,14 @@
             if(micBtn) micBtn.classList.remove('listening');
         }
 
-        // Prevent Double-Tap Zooming strictly everywhere EXCEPT inside playerModal
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function (event) {
             let now = (new Date()).getTime();
             if (now - lastTouchEnd <= 300) {
-                if (!event.target.closest('#playerModal')) {
-                    event.preventDefault();
-                }
+                if (!event.target.closest('#playerModal')) { event.preventDefault(); }
             }
             lastTouchEnd = now;
         }, false);
-
-        // Track Device & Downloads
-        function getDeviceTracker() {
-            let deviceId = localStorage.getItem('apex_device_id');
-            let isNewDownload = false;
-
-            if (!deviceId) {
-                deviceId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                localStorage.setItem('apex_device_id', deviceId);
-                isNewDownload = true;
-            }
-            return { deviceId, isNewDownload };
-        }
-
-        const { deviceId, isNewDownload } = getDeviceTracker();
-        let sessionStartTime = Date.now();
-
-        function sendAnalyticsData(type, payload = {}) {
-            const dataPacket = {
-                type: type,
-                deviceId: deviceId,
-                isNewDownload: isNewDownload,
-                timestamp: new Date().toISOString(),
-                ...payload
-            };
-
-            if (navigator.onLine) {
-                fetch(PANEL_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dataPacket)
-                }).catch(err => saveToOfflineStorage(dataPacket));
-            } else {
-                saveToOfflineStorage(dataPacket);
-            }
-        }
-
-        function saveToOfflineStorage(packet) {
-            let queue = JSON.parse(localStorage.getItem('apex_offline_queue')) || [];
-            queue.push(packet);
-            localStorage.setItem('apex_offline_queue', JSON.stringify(queue));
-        }
-
-        window.addEventListener('online', () => {
-            let queue = JSON.parse(localStorage.getItem('apex_offline_queue')) || [];
-            if (queue.length > 0) {
-                queue.forEach(packet => {
-                    fetch(PANEL_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(packet)
-                    }).catch(e => {});
-                });
-                localStorage.removeItem('apex_offline_queue');
-            }
-        });
-
-        window.addEventListener('beforeunload', () => {
-            let durationSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-            sendAnalyticsData('session_summary', { activeSeconds: durationSeconds });
-        });
 
         let dynamicShortsPool = [];
         let currentQuery = '';
@@ -434,28 +410,16 @@
 
             window.addEventListener('scroll', () => {
                 if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
-                    if (!isLoadingFeed) {
-                        loadMoreFeed();
-                    }
+                    if (!isLoadingFeed) { loadMoreFeed(); }
                 }
             });
 
             initAdMobAds();
         });
 
-        // AdMob Bridge Handler with Dynamic Top Banner Spacing
         function initAdMobAds() {
             if (window.AndroidAdMob && window.AndroidAdMob.showBanner) {
                 window.AndroidAdMob.showBanner(ADMOB_CONFIG.bannerUnitId);
-            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.showBanner) {
-                window.webkit.messageHandlers.showBanner.postMessage(ADMOB_CONFIG.bannerUnitId);
-            } else {
-                let bannerContainer = document.getElementById('topBannerContainer');
-                if (bannerContainer && bannerContainer.innerHTML.trim() !== '') {
-                    document.body.classList.add('has-top-banner');
-                } else {
-                    document.body.classList.remove('has-top-banner');
-                }
             }
         }
 
@@ -463,8 +427,6 @@
             let intId = Math.random() > 0.5 ? ADMOB_CONFIG.interstitialUnitId1 : ADMOB_CONFIG.interstitialUnitId2;
             if (window.AndroidAdMob && window.AndroidAdMob.showInterstitial) {
                 window.AndroidAdMob.showInterstitial(intId);
-            } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.showInterstitial) {
-                window.webkit.messageHandlers.showInterstitial.postMessage(intId);
             }
         }
 
@@ -476,9 +438,7 @@
             loadFreshFeed(currentQuery);
         }
 
-        function handleSearchKey(e) { 
-            if (e.key === 'Enter') triggerSearch();
-        }
+        function handleSearchKey(e) { if (e.key === 'Enter') triggerSearch(); }
 
         function filterCategory(cat, btn) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -604,9 +564,11 @@
 
         function formatNumber(num) {
             num = parseInt(num);
-            if(num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-            if(num >= 1000) return (num / 1000).toFixed(1) + 'K';
-            return num;
+            if (isNaN(num)) return '0';
+            if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toLocaleString();
         }
 
         async function openShortsFeed(startId) {
@@ -625,7 +587,7 @@
                 });
             }
 
-            list.forEach((item, index) => {
+            list.forEach((item) => {
                 let id = typeof item.id === 'string' ? item.id : (item.id.videoId || item.id);
                 if(!id) return;
                 
@@ -681,24 +643,17 @@
             let iframe = document.getElementById('playerIframe');
             iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1`;
             modal.style.display = 'block';
-
             exitFoolproofFullscreen();
         }
 
-        // Foolproof CSS Fullscreen Rotation Toggle
         function toggleFoolproofFullscreen() {
-            if (isForceFullscreen) {
-                exitFoolproofFullscreen();
-            } else {
-                enterFoolproofFullscreen();
-            }
+            if (isForceFullscreen) { exitFoolproofFullscreen(); } else { enterFoolproofFullscreen(); }
         }
 
         function enterFoolproofFullscreen() {
             let modal = document.getElementById('playerModal');
             isForceFullscreen = true;
             modal.classList.add('force-fullscreen');
-
             let iconSvg = document.getElementById('fullscreenIcon');
             if(iconSvg) iconSvg.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
         }
@@ -707,7 +662,6 @@
             let modal = document.getElementById('playerModal');
             isForceFullscreen = false;
             modal.classList.remove('force-fullscreen');
-
             let iconSvg = document.getElementById('fullscreenIcon');
             if(iconSvg) iconSvg.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
         }
@@ -718,6 +672,100 @@
             document.getElementById('playerModal').style.display = 'none';
         }
 
+        // New Chat (Pencil Icon) Function
+        function startNewChat() {
+            let box = document.getElementById('aiMessagesBox');
+            // Restore Gemini Style Unique Welcome Screen
+            box.innerHTML = `
+                <div class="ai-welcome-screen" id="aiWelcomeScreen">
+                    <div class="ai-welcome-badge">Apex Intelligence</div>
+                    <div class="ai-welcome-title">How can I help you today?</div>
+                    <div class="ai-welcome-subtitle">Search any YouTube channel name below to explore live analytics, subscriber count, total views, and video insights.</div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // APEX AI - YOUTUBE CHANNEL DETAILS FETCHER
+        // ==========================================
+        async function sendAiMessage() {
+            let input = document.getElementById('aiUserInput');
+            let query = input.value.trim();
+            if(!query) return;
+
+            // Remove welcome screen instantly when user sends message
+            let welcomeScreen = document.getElementById('aiWelcomeScreen');
+            if(welcomeScreen) {
+                welcomeScreen.remove();
+            }
+
+            let box = document.getElementById('aiMessagesBox');
+            box.innerHTML += `<div class="ai-msg user">${query}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+
+            let loadingId = 'load_' + Date.now();
+            box.innerHTML += `<div class="ai-msg bot" id="${loadingId}">Fetching channel details for "${query}"...</div>`;
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                let searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=1&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+                let searchRes = await fetch(searchUrl);
+                let searchData = await searchRes.json();
+
+                let loadDiv = document.getElementById(loadingId);
+
+                if (searchData.items && searchData.items.length > 0) {
+                    let channelId = searchData.items[0].id.channelId;
+
+                    let channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${API_KEY}`;
+                    let channelRes = await fetch(channelUrl);
+                    let channelData = await channelRes.json();
+
+                    if (channelData.items && channelData.items.length > 0) {
+                        let ch = channelData.items[0];
+                        let title = ch.snippet.title;
+                        let desc = ch.snippet.description || 'No description available.';
+                        let avatar = ch.snippet.thumbnails.high ? ch.snippet.thumbnails.high.url : ch.snippet.thumbnails.default.url;
+                        let subs = formatNumber(ch.statistics.subscriberCount || 0);
+                        let views = formatNumber(ch.statistics.viewCount || 0);
+                        let videos = formatNumber(ch.statistics.videoCount || 0);
+
+                        if(loadDiv) loadDiv.remove();
+
+                        let cardHTML = `
+                            <div class="ai-msg bot">
+                                <div>Channel analysis for <b>${title}</b>:</div>
+                                <div class="ai-channel-card">
+                                    <div class="ai-channel-header">
+                                        <img src="${avatar}" class="ai-channel-avatar">
+                                        <div class="ai-channel-name">${title}</div>
+                                    </div>
+                                    <div class="ai-channel-stats">
+                                        <div class="stat-box">Subscribers<span>${subs}</span></div>
+                                        <div class="stat-box">Total Views<span>${views}</span></div>
+                                        <div class="stat-box">Videos<span>${videos}</span></div>
+                                    </div>
+                                    <div class="ai-channel-desc"><b>Description:</b> ${desc}</div>
+                                </div>
+                            </div>
+                        `;
+                        box.innerHTML += cardHTML;
+                    } else {
+                        if(loadDiv) loadDiv.innerHTML = `Could not fetch statistics for "${query}".`;
+                    }
+                } else {
+                    if(loadDiv) loadDiv.innerHTML = `No YouTube channel found matching "${query}". Please check the name.`;
+                }
+            } catch(err) {
+                let loadDiv = document.getElementById(loadingId);
+                if(loadDiv) loadDiv.innerHTML = `Connection error while fetching channel details.`;
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function handleAiKey(e) { if(e.key === 'Enter') sendAiMessage(); }
+
         function switchTab(tab, btn) {
             closePlayer();
             closeShortsModal();
@@ -726,8 +774,13 @@
             document.getElementById(tab + 'Page').classList.add('active');
             if(btn) btn.classList.add('active');
 
-            if(tab === 'home') {
+            // Toggle Search Bar visibility based on active tab
+            let searchContainer = document.getElementById('homeSearchContainer');
+            if (tab === 'home') {
+                searchContainer.style.display = 'flex';
                 loadFreshFeed(currentQuery);
+            } else {
+                searchContainer.style.display = 'none';
             }
         }
     </script>
