@@ -163,20 +163,17 @@
         .control-btn:active { transform: scale(0.9); }
         .control-btn svg { width: 24px; height: 24px; fill: #fff; }
 
-        /* FULLSCREEN TRUE AD NETWORK MODAL */
+        /* TRUE FULLSCREEN APEX CUSTOM AD NETWORK MODAL */
         #apexAdModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; flex-direction: column; justify-content: space-between; }
         
-        /* Top Bar inside Fullscreen Ad (Sponsored + Skip Arrow Button) */
         .apex-ad-topbar { position: absolute; top: 0; left: 0; width: 100%; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
         .apex-ad-badge { background: #ff0000; color: #fff; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
         .apex-ad-skip-btn { background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.5); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px); }
         .apex-ad-skip-btn svg { width: 16px; height: 16px; fill: #fff; }
 
-        /* Fullscreen Video container (Clickable to open website) */
         .apex-ad-video-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; background: #000; }
         .apex-ad-media { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Bottom Floating Bar inside Fullscreen Ad (Direct Link + Red Button) */
         .apex-ad-bottombar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); display: flex; flex-direction: column; gap: 10px; z-index: 10; text-align: center; }
         .apex-ad-url-text { color: #00ffcc; font-size: 12px; word-break: break-all; text-decoration: underline; cursor: pointer; font-weight: 600; }
         .apex-ad-red-btn { display: block; width: 100%; background: #ff0000; color: #fff; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px; text-align: center; box-shadow: 0 4px 15px rgba(255,0,0,0.4); }
@@ -361,8 +358,8 @@
         </div>
 
         <div class="apex-ad-bottombar">
-            <a class="apex-ad-url-text" href="https://g-1-six.vercel.app/" target="_blank" onclick="event.stopPropagation();">https://g-1-six.vercel.app/</a>
-            <a href="https://g-1-six.vercel.app/" target="_blank" class="apex-ad-red-btn" onclick="event.stopPropagation(); closeApexAd();">Visit Website 🚀</a>
+            <a class="apex-ad-url-text" href="https://g-1-six.vercel.app/" target="_blank" onclick="event.preventDefault(); openAdTargetUrl();">https://g-1-six.vercel.app/</a>
+            <a href="https://g-1-six.vercel.app/" target="_blank" class="apex-ad-red-btn" onclick="event.preventDefault(); openAdTargetUrl();">Visit Website 🚀</a>
         </div>
     </div>
 
@@ -375,7 +372,7 @@
         let aiSearchCount = parseInt(localStorage.getItem('apex_ai_triggers') || '0');
 
         function showApexCustomAd() {
-            if (totalAdViewsCount >= 10) return; // 10 views limit per user
+            if (totalAdViewsCount >= 10) return;
             totalAdViewsCount++;
             localStorage.setItem('apex_ad_views', totalAdViewsCount);
 
@@ -384,10 +381,9 @@
             if (adModal) {
                 adModal.style.display = 'flex';
                 if (adVideo) { 
-                    adVideo.muted = false; // Sound enabled!
+                    adVideo.muted = false; 
                     adVideo.currentTime = 0; 
                     adVideo.play().catch(e => {
-                        // Fallback if browser blocks autoplay audio
                         adVideo.muted = true;
                         adVideo.play();
                     }); 
@@ -402,9 +398,23 @@
             if (adVideo) adVideo.pause();
         }
 
+        // Foolproof External Link Opener for Android APK WebViews
         function openAdTargetUrl() {
-            window.open("https://g-1-six.vercel.app/", "_blank");
             closeApexAd();
+            let targetUrl = "https://g-1-six.vercel.app/";
+            
+            // Check if Android interface exists to force open in external browser/app
+            if (window.AndroidBridge && window.AndroidBridge.openExternalUrl) {
+                window.AndroidBridge.openExternalUrl(targetUrl);
+            } else {
+                // Fallback standard opening method guaranteed to work in WebView
+                let a = document.createElement('a');
+                a.href = targetUrl;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
         // 1. Trigger ad after 10 seconds of opening app
@@ -801,7 +811,7 @@
 
                         let cardHTML = `
                             <div class="ai-msg bot">
-                                <div>Channel analysis for <b>${title}</b>:</div>
+                                <div>Channel analysis/span><b>${title}</b>:</div>
                                 <div class="ai-channel-card">
                                     <div class="ai-channel-header">
                                         <img src="${avatar}" class="ai-channel-avatar">
@@ -838,7 +848,7 @@
             document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(tab + 'Page').classList.add('active');
-            if(btn) btn.classList.add('sub');
+            if(btn) btn.classList.add('active');
 
             let searchContainer = document.getElementById('homeSearchContainer');
             if (tab === 'home') {
