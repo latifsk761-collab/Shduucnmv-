@@ -176,7 +176,14 @@
 
         .apex-ad-bottombar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); display: flex; flex-direction: column; gap: 10px; z-index: 10; text-align: center; }
         .apex-ad-url-text { color: #00ffcc; font-size: 12px; word-break: break-all; text-decoration: underline; cursor: pointer; font-weight: 600; }
-        .apex-ad-red-btn { display: block; width: 100%; background: #ff0000; color: #fff; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px; text-align: center; box-shadow: 0 4px 15px rgba(255,0,0,0.4); }
+        .apex-ad-red-btn { display: block; width: 100%; background: #ff0000; color: #fff; text-decoration: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px; text-align: center; box-shadow: 0 4px 15px rgba(255,0,0,0.4); border: none; cursor: pointer; }
+
+        /* IN-APP BROWSER IFRAME MODAL (OPENS INSIDE THE APP!) */
+        #inAppBrowserModal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999; flex-direction: column; }
+        .inapp-browser-header { background: #141414; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; height: 52px; flex-shrink: 0; }
+        .inapp-browser-url { background: #222; color: #aaa; font-size: 12px; padding: 6px 12px; border-radius: 16px; flex: 1; margin: 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; border: 1px solid #333; }
+        .inapp-browser-close { background: #ff0000; color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+        #inAppBrowserIframe { width: 100%; flex: 1; border: none; background: #fff; }
 
         .page-view { display: none; }
         .page-view.active { display: block; }
@@ -353,14 +360,24 @@
             </button>
         </div>
         
-        <div class="apex-ad-video-container" onclick="openAdTargetUrl()">
+        <div class="apex-ad-video-container" onclick="openInAppBrowser()">
             <video id="apexAdVideo" class="apex-ad-media" src="https://files.catbox.moe/izdue1.mp4" autoplay playsinline></video>
         </div>
 
         <div class="apex-ad-bottombar">
-            <a class="apex-ad-url-text" href="https://g-1-six.vercel.app/" target="_blank" onclick="event.preventDefault(); openAdTargetUrl();">https://g-1-six.vercel.app/</a>
-            <a href="https://g-1-six.vercel.app/" target="_blank" class="apex-ad-red-btn" onclick="event.preventDefault(); openAdTargetUrl();">Visit Website 🚀</a>
+            <span class="apex-ad-url-text" onclick="event.stopPropagation(); openInAppBrowser();">https://g-1-six.vercel.app/</span>
+            <button class="apex-ad-red-btn" onclick="event.stopPropagation(); openInAppBrowser();">Visit Website 🚀</button>
         </div>
+    </div>
+
+    <!-- IN-APP BROWSER IFRAME MODAL (STAYS INSIDE APEX PLAY) -->
+    <div id="inAppBrowserModal">
+        <div class="inapp-browser-header">
+            <span style="font-size:13px; font-weight:bold; color:#fff;">🔒 Apex Browser</span>
+            <div class="inapp-browser-url" id="inappUrlDisplay">https://g-1-six.vercel.app/</div>
+            <button class="inapp-browser-close" onclick="closeInAppBrowser()">Close ✕</button>
+        </div>
+        <iframe id="inAppBrowserIframe" src="" allow="autoplay; encrypted-media; fullscreen; camera; microphone" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -398,23 +415,24 @@
             if (adVideo) adVideo.pause();
         }
 
-        // Foolproof External Link Opener for Android APK WebViews
-        function openAdTargetUrl() {
+        // OPENS WEBSITE INSIDE THE APP WITHOUT LEAVING WEBVIEW!
+        function openInAppBrowser() {
             closeApexAd();
-            let targetUrl = "https://g-1-six.vercel.app/";
+            let browserModal = document.getElementById('inAppBrowserModal');
+            let browserIframe = document.getElementById('inAppBrowserIframe');
+            let urlDisplay = document.getElementById('inappUrlDisplay');
             
-            // Check if Android interface exists to force open in external browser/app
-            if (window.AndroidBridge && window.AndroidBridge.openExternalUrl) {
-                window.AndroidBridge.openExternalUrl(targetUrl);
-            } else {
-                // Fallback standard opening method guaranteed to work in WebView
-                let a = document.createElement('a');
-                a.href = targetUrl;
-                a.target = '_blank';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
+            let targetUrl = "https://g-1-six.vercel.app/";
+            if (urlDisplay) urlDisplay.innerText = targetUrl;
+            if (browserIframe) browserIframe.src = targetUrl;
+            if (browserModal) browserModal.style.display = 'flex';
+        }
+
+        function closeInAppBrowser() {
+            let browserModal = document.getElementById('inAppBrowserModal');
+            let browserIframe = document.getElementById('inAppBrowserIframe');
+            if (browserIframe) browserIframe.src = '';
+            if (browserModal) browserModal.style.display = 'none';
         }
 
         // 1. Trigger ad after 10 seconds of opening app
@@ -482,7 +500,9 @@
         document.addEventListener('touchend', function (event) {
             let now = (new Date()).getTime();
             if (now - lastTouchEnd <= 300) {
-                if (!event.target.closest('#playerModal')) { event.preventDefault(); }
+                if (!event.target.closest('#playerModal') && !event.target.closest('#inAppBrowserModal')) { 
+                    event.preventDefault(); 
+                }
             }
             lastTouchEnd = now;
         }, false);
@@ -811,7 +831,7 @@
 
                         let cardHTML = `
                             <div class="ai-msg bot">
-                                <div>Channel analysis/span><b>${title}</b>:</div>
+                                <div>Channel analysis for <b>${title}</b>:</div>
                                 <div class="ai-channel-card">
                                     <div class="ai-channel-header">
                                         <img src="${avatar}" class="ai-channel-avatar">
