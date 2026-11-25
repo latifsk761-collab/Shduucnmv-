@@ -1,840 +1,385 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>APEX AI</title>
-  <style>
-    :root {
-      --bg-main: #131314;
-      --bg-sidebar: #1e1f20;
-      --bg-input: #1e1f20;
-      --bg-user: #282a2c;
-      --bg-hover: #2d2f31;
-      --bg-code: #0d0e10;
-      --bg-code-header: #1c1e22;
-      --text-main: #e3e3e3;
-      --text-muted: #9aa0a6;
-      --accent: #8ab4f8;
-      --border: #333537;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      height: 100dvh;
-      width: 100%;
-      overflow: hidden;
-      touch-action: pan-x pan-y;
-      overscroll-behavior: none;
-    }
-
-    body {
-      display: flex;
-    }
-
-    /* Prevent accidental UI text selection */
-    .header, .sidebar, .input-wrap, .ai-actions, .code-header, .welcome {
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 280px;
-      height: 100%;
-      background: var(--bg-sidebar);
-      border-right: 1px solid var(--border);
-      z-index: 1000;
-      transition: left 0.25s ease;
-      display: flex;
-      flex-direction: column;
-      padding: 14px;
-    }
-
-    .sidebar.open {
-      left: 0;
-    }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 999;
-    }
-
-    .overlay.show {
-      display: block;
-    }
-
-    .new-chat-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #282a2c;
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      padding: 12px 14px;
-      border-radius: 24px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-bottom: 18px;
-    }
-
-    .new-chat-btn:active {
-      background: var(--bg-hover);
-    }
-
-    .history-title {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-      padding-left: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .chat-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .chat-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 14px;
-      color: var(--text-main);
-      cursor: pointer;
-    }
-
-    .chat-item.active,
-    .chat-item:hover {
-      background: var(--bg-hover);
-    }
-
-    .chat-item-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 195px;
-    }
-
-    .del-chat {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Main Container */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-    }
-
-    /* Header */
-    .header {
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      flex-shrink: 0;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      color: var(--text-main);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      border-radius: 50%;
-    }
-
-    .icon-btn:active {
-      background: var(--bg-hover);
-    }
-
-    .brand {
-      font-size: 19px;
-      font-weight: 600;
-      letter-spacing: 0.4px;
-      background: linear-gradient(90deg, #8ab4f8, #c58af9);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* Chat Box */
-    .chat-box {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 16px 14px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      touch-action: pan-y;
-    }
-
-    .welcome {
-      margin: auto;
-      text-align: center;
-      max-width: 320px;
-    }
-
-    .welcome h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-      background: linear-gradient(90deg, #8ab4f8, #c58af9, #f28b82);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .welcome p {
-      color: var(--text-muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .msg-row {
-      display: flex;
-      flex-direction: column;
-      max-width: 88%;
-    }
-
-    .msg-row.user {
-      align-self: flex-end;
-    }
-
-    .msg-row.ai {
-      align-self: flex-start;
-      width: 100%;
-      max-width: 100%;
-    }
-
-    .bubble {
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 15px;
-      line-height: 1.6;
-      word-wrap: break-word;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    .user .bubble {
-      background: var(--bg-user);
-      border-bottom-right-radius: 6px;
-      white-space: pre-wrap;
-    }
-
-    .ai .bubble {
-      background: transparent;
-      padding: 4px 2px;
-      width: 100%;
-    }
-
-    .ai-text {
-      white-space: pre-wrap;
-      margin-bottom: 8px;
-    }
-
-    /* Gemini-Style Code Block */
-    .code-card {
-      background: var(--bg-code);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin: 10px 0;
-      overflow: hidden;
-      width: 100%;
-    }
-
-    .code-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-code-header);
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .code-lang {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: lowercase;
-      font-family: monospace;
-    }
-
-    .code-copy-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .code-copy-btn:active {
-      background: var(--bg-hover);
-    }
-
-    .code-body {
-      padding: 12px;
-      overflow-x: auto;
-      font-family: "Fira Code", Consolas, Monaco, monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      color: #a8c7fa;
-      white-space: pre;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    /* Action Buttons under AI Message */
-    .ai-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .mini-btn {
-      background: var(--bg-sidebar);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      font-size: 12px;
-      padding: 5px 11px;
-      border-radius: 14px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .mini-btn:active {
-      color: var(--text-main);
-      background: var(--bg-hover);
-    }
-
-    /* Bottom Input Area */
-    .input-wrap {
-      padding: 8px 12px 12px;
-      background: var(--bg-main);
-      flex-shrink: 0;
-    }
-
-    .input-bar {
-      display: flex;
-      align-items: flex-end;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 6px 10px 6px 16px;
-      gap: 6px;
-    }
-
-    textarea {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text-main);
-      font-size: 16px;
-      resize: none;
-      max-height: 120px;
-      padding: 8px 0;
-      line-height: 1.4;
-    }
-
-    textarea::placeholder {
-      color: var(--text-muted);
-    }
-
-    .mic-btn.recording {
-      color: #f28b82;
-      background: rgba(242, 139, 130, 0.15);
-    }
-
-    .send-btn {
-      background: var(--accent);
-      color: #131314;
-      border: none;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .send-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .typing {
-      color: var(--text-muted);
-      font-size: 14px;
-      padding-left: 4px;
-      user-select: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX Neon Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        neonRed: '#ff2a5f',
+                        neonCrimson: '#ff003c',
+                        darkBg: '#09090b',
+                        cardBg: '#121216',
+                        btnBg: '#1a1a22',
+                        btnHover: '#242430',
+                    },
+                    boxShadow: {
+                        'neon': '0 0 18px rgba(255, 42, 95, 0.45)',
+                        'neon-strong': '0 0 25px rgba(255, 0, 60, 0.7)',
+                        'card': '0 25px 50px -12px rgba(0, 0, 0, 0.85)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom subtle scrollbar for long expressions */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Tactile button press animation */
+        .calc-btn {
+            transition: transform 0.08s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .calc-btn:active {
+            transform: scale(0.94);
+        }
+    </style>
 </head>
-<body>
+<body class="bg-darkBg text-white min-h-screen flex items-center justify-center p-4 selection:bg-neonRed selection:text-white">
 
-  <div class="overlay" id="overlay" onclick="toggleSidebar(false)"></div>
-
-  <!-- Left 3-Line Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <button class="new-chat-btn" onclick="startNewChat()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 20h9"/>
-        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-      </svg>
-      <span>New Chat</span>
-    </button>
-
-    <div class="history-title">Saved Chats</div>
-    <div class="chat-list" id="chatList"></div>
-  </aside>
-
-  <!-- Main Screen -->
-  <div class="main">
-    <header class="header">
-      <div class="header-left">
-        <button class="icon-btn" onclick="toggleSidebar(true)" aria-label="Menu">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-        <div class="brand">APEX AI</div>
-      </div>
-
-      <button class="icon-btn" onclick="startNewChat()" aria-label="New Chat">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 20h9"/>
-          <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </button>
-    </header>
-
-    <div class="chat-box" id="chatBox"></div>
-
-    <div class="input-wrap">
-      <div class="input-bar">
-        <textarea id="promptInput" rows="1" placeholder="Ask APEX AI..."></textarea>
-
-        <button class="icon-btn mic-btn" id="micBtn" onclick="toggleSpeech()" aria-label="Voice Input">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-        </button>
-
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Send">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
-      </div>
+    <!-- Ambient Background Glow -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-24 -left-24 w-72 h-72 bg-neonCrimson/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-neonRed/10 rounded-full blur-3xl"></div>
     </div>
-  </div>
 
-  <script>
-    // Block pinch-zoom and double-tap zoom completely
-    document.addEventListener("gesturestart", e => e.preventDefault());
-    document.addEventListener("touchmove", e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
+    <!-- Calculator Container -->
+    <main class="relative w-full max-w-sm bg-cardBg border border-zinc-800/80 rounded-3xl p-5 sm:p-6 shadow-card backdrop-blur-xl">
+        
+        <!-- Top Header Bar -->
+        <header class="flex items-center justify-between mb-4 px-1">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-neonRed shadow-neon animate-pulse"></span>
+                <span class="text-xs font-semibold tracking-widest uppercase text-zinc-400">APEX CALC</span>
+            </div>
+            <button id="copyBtn" title="Copy Result" class="text-xs text-zinc-400 hover:text-neonRed transition-colors px-2.5 py-1 rounded-lg bg-zinc-900/90 border border-zinc-800 flex items-center gap-1.5">
+                <span id="copyText">Copy</span>
+            </button>
+        </header>
 
-    const GROQ_API_KEY = "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";
-    const GROQ_MODEL = "openai/gpt-oss-120b";
+        <!-- Display Screen -->
+        <section class="bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-4 sm:p-5 mb-5 flex flex-col justify-end min-h-[124px] shadow-inner">
+            <!-- Previous / Current Expression -->
+            <div id="expressionDisplay" class="font-mono text-sm sm:text-base text-zinc-400 text-right overflow-x-auto no-scrollbar whitespace-nowrap min-h-[24px] mb-1">
+                0
+            </div>
+            <!-- Main Result -->
+            <div id="resultDisplay" class="font-mono text-3xl sm:text-4xl font-bold text-white text-right overflow-x-auto no-scrollbar whitespace-nowrap tracking-tight">
+                0
+            </div>
+        </section>
 
-    const SVG_COPY = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-    const SVG_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#81c995" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
-    const SVG_SPEAKER = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
-    const SVG_TRASH = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>`;
+        <!-- Keypad Grid -->
+        <section class="grid grid-cols-4 gap-3">
+            <!-- Row 1 -->
+            <button type="button" data-action="clear" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-neonRed font-semibold text-lg border border-neonRed/25">
+                AC
+            </button>
+            <button type="button" data-action="backspace" aria-label="Backspace" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-semibold text-lg border border-zinc-800/80 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-neonRed" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                </svg>
+            </button>
+            <button type="button" data-value="%" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-neonRed font-semibold text-lg border border-zinc-800/80">
+                %
+            </button>
+            <button type="button" data-value="/" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-neonRed font-bold text-xl border border-zinc-800/80">
+                ÷
+            </button>
 
-    let chats = JSON.parse(localStorage.getItem("apex_ai_chats") || "[]");
-    let currentChatId = null;
-    let isLoading = false;
+            <!-- Row 2 -->
+            <button type="button" data-value="7" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                7
+            </button>
+            <button type="button" data-value="8" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                8
+            </button>
+            <button type="button" data-value="9" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                9
+            </button>
+            <button type="button" data-value="*" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-neonRed font-bold text-xl border border-zinc-800/80">
+                ×
+            </button>
 
-    const chatBox = document.getElementById("chatBox");
-    const chatList = document.getElementById("chatList");
-    const promptInput = document.getElementById("promptInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const micBtn = document.getElementById("micBtn");
+            <!-- Row 3 -->
+            <button type="button" data-value="4" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                4
+            </button>
+            <button type="button" data-value="5" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                5
+            </button>
+            <button type="button" data-value="6" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                6
+            </button>
+            <button type="button" data-value="-" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-neonRed font-bold text-xl border border-zinc-800/80">
+                −
+            </button>
 
-    function copyCleanText(text, btnElement, defaultLabel) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => showCopied(btnElement, defaultLabel));
-      } else {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        showCopied(btnElement, defaultLabel);
-      }
-    }
+            <!-- Row 4 -->
+            <button type="button" data-value="1" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                1
+            </button>
+            <button type="button" data-value="2" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                2
+            </button>
+            <button type="button" data-value="3" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                3
+            </button>
+            <button type="button" data-value="+" class="calc-btn p-4 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-neonRed font-bold text-xl border border-zinc-800/80">
+                +
+            </button>
 
-    function showCopied(btn, defaultLabel) {
-      btn.innerHTML = `${SVG_CHECK}<span>Copied</span>`;
-      setTimeout(() => {
-        btn.innerHTML = `${SVG_COPY}<span>${defaultLabel}</span>`;
-      }, 1500);
-    }
+            <!-- Row 5 -->
+            <button type="button" data-value="00" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-zinc-300 font-semibold text-lg border border-zinc-800/60">
+                00
+            </button>
+            <button type="button" data-value="0" class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-semibold text-xl border border-zinc-800/60">
+                0
+            </button>
+            <button type="button" data-value="." class="calc-btn p-4 rounded-2xl bg-btnBg hover:bg-btnHover text-white font-bold text-xl border border-zinc-800/60">
+                .
+            </button>
+            <button type="button" data-action="equals" class="calc-btn p-4 rounded-2xl bg-gradient-to-br from-neonRed to-neonCrimson hover:brightness-110 text-white font-bold text-2xl shadow-neon hover:shadow-neon-strong">
+                =
+            </button>
+        </section>
 
-    function saveChats() {
-      localStorage.setItem("apex_ai_chats", JSON.stringify(chats));
-      renderChatList();
-    }
+        <!-- Subtle Footer Hint -->
+        <footer class="mt-4 text-center">
+            <p class="text-[11px] text-zinc-500">Supports touch &amp; physical keyboard</p>
+        </footer>
+    </main>
 
-    function toggleSidebar(open) {
-      document.getElementById("sidebar").classList.toggle("open", open);
-      document.getElementById("overlay").classList.toggle("show", open);
-    }
+    <!-- Calculator Logic -->
+    <script>
+        (function () {
+            const expressionDisplay = document.getElementById('expressionDisplay');
+            const resultDisplay = document.getElementById('resultDisplay');
+            const copyBtn = document.getElementById('copyBtn');
+            const copyText = document.getElementById('copyText');
 
-    function startNewChat() {
-      currentChatId = null;
-      renderMessages();
-      toggleSidebar(false);
-      promptInput.focus();
-    }
+            let currentExpression = '';
+            let lastResult = '0';
+            let isResultEvaluated = false;
 
-    function loadChat(id) {
-      currentChatId = id;
-      renderMessages();
-      renderChatList();
-      toggleSidebar(false);
-    }
+            const operators = ['+', '-', '*', '/', '%'];
 
-    function deleteChat(e, id) {
-      e.stopPropagation();
-      chats = chats.filter(c => c.id !== id);
-      if (currentChatId === id) currentChatId = null;
-      saveChats();
-      renderMessages();
-    }
+            // Format expression visually for display (replacing * and / with × and ÷)
+            function formatForDisplay(expr) {
+                if (!expr) return '0';
+                return expr
+                    .replace(/\*/g, '×')
+                    .replace(/\//g, '÷')
+                    .replace(/-/g, '−');
+            }
 
-    function renderChatList() {
-      chatList.innerHTML = "";
-      if (chats.length === 0) {
-        chatList.innerHTML = `<div style="color:#9aa0a6;font-size:13px;padding:8px;">No saved chats yet</div>`;
-        return;
-      }
-      chats.forEach(chat => {
-        const div = document.createElement("div");
-        div.className = "chat-item" + (chat.id === currentChatId ? " active" : "");
-        div.onclick = () => loadChat(chat.id);
-        div.innerHTML = `
-          <span class="chat-item-title">${escapeHtml(chat.title)}</span>
-          <button class="del-chat" onclick="deleteChat(event, '${chat.id}')" aria-label="Delete">${SVG_TRASH}</button>
-        `;
-        chatList.appendChild(div);
-      });
-    }
+            // Safe arithmetic evaluator without raw eval()
+            function calculateExpression(expr) {
+                try {
+                    // Remove trailing operators before evaluating
+                    let sanitized = expr.replace(/[+\-*/%.]+$/, '');
+                    if (!sanitized) return '0';
 
-    function renderMessages() {
-      chatBox.innerHTML = "";
-      const activeChat = chats.find(c => c.id === currentChatId);
+                    // Convert percentage instances like "50%" -> "(50/100)"
+                    sanitized = sanitized.replace(/(\d+(\.\d+)?)%/g, '($1/100)');
 
-      if (!activeChat || activeChat.messages.length === 0) {
-        chatBox.innerHTML = `
-          <div class="welcome">
-            <h1>Hello, APEX AI</h1>
-            <p>Ask anything, generate clean code, or use voice input.</p>
-          </div>
-        `;
-        return;
-      }
+                    // Validate allowed characters strictly
+                    if (!/^[0-9+\-*/().\s]+$/.test(sanitized)) {
+                        return 'Error';
+                    }
 
-      activeChat.messages.forEach(msg => {
-        appendMessageUI(msg.role === "user" ? "user" : "ai", msg.content);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+                    // Compute using Function constructor after strict regex validation
+                    const rawResult = new Function('return ' + sanitized)();
 
-    function buildFormattedAIContent(container, rawText) {
-      const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
-      let lastIndex = 0;
-      let match;
+                    if (!isFinite(rawResult) || isNaN(rawResult)) {
+                        return 'Cannot divide by 0';
+                    }
 
-      while ((match = codeBlockRegex.exec(rawText)) !== null) {
-        const textBefore = rawText.slice(lastIndex, match.index).trim();
-        if (textBefore) {
-          const p = document.createElement("div");
-          p.className = "ai-text";
-          p.textContent = textBefore;
-          container.appendChild(p);
-        }
+                    // Fix floating-point precision artifacts (e.g., 0.1 + 0.2)
+                    const rounded = Math.round((rawResult + Number.EPSILON) * 1e10) / 1e10;
+                    return String(rounded);
+                } catch (e) {
+                    return 'Error';
+                }
+            }
 
-        const lang = match[1] || "code";
-        const codeContent = match[2].replace(/\n$/, "");
+            // Update UI displays and auto-scroll to latest digit
+            function updateScreen(livePreview = true) {
+                expressionDisplay.textContent = formatForDisplay(currentExpression);
+                expressionDisplay.scrollLeft = expressionDisplay.scrollWidth;
 
-        const card = document.createElement("div");
-        card.className = "code-card";
+                if (livePreview && currentExpression) {
+                    const preview = calculateExpression(currentExpression);
+                    if (preview !== 'Error' && preview !== 'Cannot divide by 0') {
+                        resultDisplay.textContent = preview;
+                    }
+                } else if (!currentExpression) {
+                    resultDisplay.textContent = '0';
+                }
+                resultDisplay.scrollLeft = resultDisplay.scrollWidth;
+            }
 
-        const header = document.createElement("div");
-        header.className = "code-header";
+            // Handle number, decimal, or operator input
+            function appendInput(val) {
+                const lastChar = currentExpression.slice(-1);
 
-        const langSpan = document.createElement("span");
-        langSpan.className = "code-lang";
-        langSpan.textContent = lang;
+                // If user just pressed '=' and types a number, start fresh
+                if (isResultEvaluated) {
+                    if (operators.includes(val)) {
+                        currentExpression = lastResult !== 'Error' && lastResult !== 'Cannot divide by 0' ? lastResult : '0';
+                    } else {
+                        currentExpression = '';
+                    }
+                    isResultEvaluated = false;
+                }
 
-        const copyCodeBtn = document.createElement("button");
-        copyCodeBtn.className = "code-copy-btn";
-        copyCodeBtn.innerHTML = `${SVG_COPY}<span>Copy code</span>`;
-        copyCodeBtn.onclick = () => copyCleanText(codeContent, copyCodeBtn, "Copy code");
+                // Prevent multiple leading zeros
+                if ((val === '0' || val === '00') && currentExpression === '0') {
+                    return;
+                }
+                if (val === '00' && currentExpression === '') {
+                    currentExpression = '0';
+                    updateScreen();
+                    return;
+                }
 
-        header.appendChild(langSpan);
-        header.appendChild(copyCodeBtn);
+                // Prevent duplicate operators
+                if (operators.includes(val)) {
+                    if (currentExpression === '' && val !== '-') return;
+                    if (operators.includes(lastChar)) {
+                        currentExpression = currentExpression.slice(0, -1) + val;
+                        updateScreen();
+                        return;
+                    }
+                }
 
-        const pre = document.createElement("pre");
-        pre.className = "code-body";
-        pre.textContent = codeContent;
+                // Prevent multiple decimals in the same number segment
+                if (val === '.') {
+                    const segments = currentExpression.split(/[+\-*/%]/);
+                    const currentSegment = segments[segments.length - 1];
+                    if (currentSegment.includes('.')) return;
+                    if (currentSegment === '') {
+                        currentExpression += '0.';
+                        updateScreen();
+                        return;
+                    }
+                }
 
-        card.appendChild(header);
-        card.appendChild(pre);
-        container.appendChild(card);
+                // Replace initial '0' if a non-zero digit is pressed
+                if (currentExpression === '0' && !operators.includes(val) && val !== '.') {
+                    currentExpression = val;
+                } else {
+                    currentExpression += val;
+                }
 
-        lastIndex = codeBlockRegex.lastIndex;
-      }
+                updateScreen(true);
+            }
 
-      const remaining = rawText.slice(lastIndex).trim();
-      if (remaining) {
-        const p = document.createElement("div");
-        p.className = "ai-text";
-        p.textContent = remaining;
-        container.appendChild(p);
-      }
-    }
+            // Clear all state
+            function clearAll() {
+                currentExpression = '';
+                lastResult = '0';
+                isResultEvaluated = false;
+                expressionDisplay.textContent = '0';
+                resultDisplay.textContent = '0';
+            }
 
-    function appendMessageUI(sender, text) {
-      const welcome = chatBox.querySelector(".welcome");
-      if (welcome) welcome.remove();
+            // Delete last character
+            function deleteLast() {
+                if (isResultEvaluated) {
+                    isResultEvaluated = false;
+                }
+                currentExpression = currentExpression.slice(0, -1);
+                updateScreen(true);
+            }
 
-      const row = document.createElement("div");
-      row.className = `msg-row ${sender}`;
+            // Finalize calculation on '='
+            function evaluateFinal() {
+                if (!currentExpression) return;
+                const finalRes = calculateExpression(currentExpression);
+                resultDisplay.textContent = finalRes;
+                lastResult = finalRes;
+                isResultEvaluated = true;
+                resultDisplay.scrollLeft = resultDisplay.scrollWidth;
+            }
 
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
+            // Button click listeners
+            document.querySelectorAll('.calc-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.getAttribute('data-action');
+                    const value = btn.getAttribute('data-value');
 
-      if (sender === "user") {
-        bubble.textContent = text;
-        row.appendChild(bubble);
-      } else {
-        buildFormattedAIContent(bubble, text);
-        row.appendChild(bubble);
+                    if (action === 'clear') {
+                        clearAll();
+                    } else if (action === 'backspace') {
+                        deleteLast();
+                    } else if (action === 'equals') {
+                        evaluateFinal();
+                    } else if (value) {
+                        appendInput(value);
+                    }
+                });
+            });
 
-        const actions = document.createElement("div");
-        actions.className = "ai-actions";
+            // Physical keyboard support
+            document.addEventListener('keydown', (e) => {
+                const key = e.key;
 
-        const speakBtn = document.createElement("button");
-        speakBtn.className = "mini-btn";
-        speakBtn.innerHTML = `${SVG_SPEAKER}<span>Listen</span>`;
-        speakBtn.onclick = () => speakText(text);
+                if (/^[0-9]$/.test(key) || ['+', '-', '*', '/', '%', '.'].includes(key)) {
+                    e.preventDefault();
+                    appendInput(key);
+                } else if (key === 'Enter' || key === '=') {
+                    e.preventDefault();
+                    evaluateFinal();
+                } else if (key === 'Backspace') {
+                    e.preventDefault();
+                    deleteLast();
+                } else if (key === 'Escape' || key.toLowerCase() === 'c') {
+                    e.preventDefault();
+                    clearAll();
+                }
+            });
 
-        const copyBtn = document.createElement("button");
-        copyBtn.className = "mini-btn";
-        copyBtn.innerHTML = `${SVG_COPY}<span>Copy</span>`;
-        copyBtn.onclick = () => copyCleanText(text, copyBtn, "Copy");
-
-        actions.appendChild(speakBtn);
-        actions.appendChild(copyBtn);
-        row.appendChild(actions);
-      }
-
-      chatBox.appendChild(row);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = promptInput.value.trim();
-      if (!text || isLoading) return;
-
-      if (!currentChatId) {
-        currentChatId = Date.now().toString();
-        chats.unshift({
-          id: currentChatId,
-          title: text.slice(0, 32),
-          messages: []
-        });
-      }
-
-      const activeChat = chats.find(c => c.id === currentChatId);
-      activeChat.messages.push({ role: "user", content: text });
-      saveChats();
-
-      promptInput.value = "";
-      promptInput.style.height = "auto";
-      appendMessageUI("user", text);
-
-      isLoading = true;
-      sendBtn.disabled = true;
-
-      const typingEl = document.createElement("div");
-      typingEl.className = "typing";
-      typingEl.textContent = "APEX AI is thinking...";
-      chatBox.appendChild(typingEl);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${GROQ_API_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: [
-              {
-                role: "system",
-                content: "You are APEX AI, an expert coding and general assistant. Always wrap code inside proper markdown fenced code blocks like ```html or ```javascript. Do not use emojis in code."
-              },
-              ...activeChat.messages
-            ]
-          })
-        });
-
-        const data = await res.json();
-        typingEl.remove();
-
-        if (data.choices && data.choices[0]) {
-          const reply = data.choices[0].message.content;
-          activeChat.messages.push({ role: "assistant", content: reply });
-          saveChats();
-          appendMessageUI("ai", reply);
-        } else {
-          appendMessageUI("ai", "Error: " + (data.error?.message || "Unable to get response."));
-        }
-      } catch (err) {
-        typingEl.remove();
-        appendMessageUI("ai", "Network error. Please check your internet connection.");
-      } finally {
-        isLoading = false;
-        sendBtn.disabled = false;
-      }
-    }
-
-    function speakText(text) {
-      if (!("speechSynthesis" in window)) return;
-      window.speechSynthesis.cancel();
-      const cleanSpeech = text.replace(/```[\s\S]*?```/g, " Code block generated. ");
-      const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-      utterance.lang = /[\u0900-\u097F]/.test(cleanSpeech) ? "hi-IN" : "en-US";
-      utterance.rate = 1;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    let recognition = null;
-    let isRecording = false;
-
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = "hi-IN";
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        isRecording = true;
-        micBtn.classList.add("recording");
-      };
-
-      recognition.onend = () => {
-        isRecording = false;
-        micBtn.classList.remove("recording");
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        promptInput.value = (promptInput.value + " " + transcript).trim();
-        autoResize();
-      };
-    }
-
-    function toggleSpeech() {
-      if (!recognition) return;
-      if (isRecording) {
-        recognition.stop();
-      } else {
-        recognition.start();
-      }
-    }
-
-    function autoResize() {
-      promptInput.style.height = "auto";
-      promptInput.style.height = promptInput.scrollHeight + "px";
-    }
-
-    promptInput.addEventListener("input", autoResize);
-    promptInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-      }[m]));
-    }
-
-    renderChatList();
-    renderMessages();
-  </script>
+            // Copy result to clipboard using execCommand fallback
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = resultDisplay.textContent;
+                const tempInput = document.createElement('textarea');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    copyText.textContent = 'Copied!';
+                    copyBtn.classList.add('text-neonRed', 'border-neonRed/50');
+                    setTimeout(() => {
+                        copyText.textContent = 'Copy';
+                        copyBtn.classList.remove('text-neonRed', 'border-neonRed/50');
+                    }, 1400);
+                } catch (err) {
+                    copyText.textContent = 'Failed';
+                }
+                document.body.removeChild(tempInput);
+            });
+        })();
+    </script>
 </body>
 </html>
+```
